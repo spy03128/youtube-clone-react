@@ -1,14 +1,16 @@
 import Axios from "axios";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import SingleComment from "./SingleComment";
+import ReplyComment from "./ReplayComment";
 
 function Comment(props) {
   const user = useSelector((state) => state.user);
   const videoId = props.postId;
-  const [commentValue, setcommentValue] = useState("");
+  const [commentValue, setCommentValue] = useState("");
 
   const handleClick = (e) => {
-    setcommentValue(e.currentTarget.value);
+    setCommentValue(e.currentTarget.value);
   };
 
   const onSubmit = (e) => {
@@ -22,6 +24,8 @@ function Comment(props) {
     Axios.post("/api/comment/saveComment", variables).then((response) => {
       if (response.data.success) {
         console.log(response.data.result);
+        props.refreshFunction(response.data.result);
+        setCommentValue("");
       } else {
         alert("커멘트를 저장하지 못했습니다");
       }
@@ -35,6 +39,25 @@ function Comment(props) {
       <hr />
 
       {/* {comment lists} */}
+      {props.commentLists &&
+        props.commentLists.map(
+          (comment, index) =>
+            !comment.responseTo && (
+              <React.Fragment>
+                <SingleComment
+                  comment={comment}
+                  postId={videoId}
+                  refreshFunction={props.refreshFunction}
+                />
+                <ReplyComment
+                  parentCommentId={comment._id}
+                  postId={videoId}
+                  commentLists={props.commentLists}
+                  refreshFunction={props.refreshFunction}
+                />
+              </React.Fragment>
+            )
+        )}
 
       {/* {Root comment form} */}
 
